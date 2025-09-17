@@ -51,6 +51,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
+            opacity: 0.7; /* Reducir opacidad para mejor legibilidad */
         }
 
         header {
@@ -79,6 +80,7 @@
             font-weight: 700;
             font-size: 1.8rem;
             color: var(--primary-color);
+            z-index: 1001;
         }
 
         .logo i {
@@ -126,11 +128,47 @@
             align-items: center;
             justify-content: center;
             transition: var(--transition);
+            z-index: 1001;
         }
 
         .theme-toggle:hover {
             background: var(--primary-dark);
             transform: rotate(30deg);
+        }
+
+        /* Menú Hamburguesa */
+        .menu-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: space-around;
+            width: 30px;
+            height: 25px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+            z-index: 1001;
+        }
+
+        .menu-toggle span {
+            width: 100%;
+            height: 3px;
+            background: var(--primary-color);
+            border-radius: 5px;
+            transition: var(--transition);
+            transform-origin: center;
+        }
+
+        .menu-toggle.active span:nth-child(1) {
+            transform: translateY(8px) rotate(45deg);
+        }
+
+        .menu-toggle.active span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .menu-toggle.active span:nth-child(3) {
+            transform: translateY(-8px) rotate(-45deg);
         }
 
         .hero {
@@ -550,15 +588,35 @@
             }
         }
 
-        @media (max-width: 600px) {
-            .header-container {
-                flex-direction: column;
-                gap: 1rem;
+        @media (max-width: 768px) {
+            .menu-toggle {
+                display: flex;
+            }
+            
+            nav {
+                position: fixed;
+                top: 0;
+                right: -100%;
+                width: 70%;
+                height: 100vh;
+                background: var(--header-bg);
+                backdrop-filter: blur(10px);
+                transition: var(--transition);
+                padding: 6rem 2rem 2rem;
+                box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            }
+            
+            nav.active {
+                right: 0;
             }
             
             nav ul {
-                flex-wrap: wrap;
-                justify-content: center;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            
+            .header-container {
+                position: relative;
             }
             
             .social-icons {
@@ -567,6 +625,13 @@
                 justify-content: center;
                 margin: 2rem 0;
                 transform: none;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .header-container {
+                flex-direction: row;
+                gap: 1rem;
             }
             
             .hero {
@@ -594,7 +659,14 @@
                 <i class="fas fa-gem"></i>
                 <span>Eclat</span>
             </div>
-            <nav>
+            
+            <button class="menu-toggle" id="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            
+            <nav id="main-nav">
                 <ul>
                     <li><a href="#inicio">Inicio</a></li>
                     <li><a href="#productos">Productos</a></li>
@@ -604,6 +676,7 @@
                     <li><a href="#contacto">Contacto</a></li>
                 </ul>
             </nav>
+            
             <button class="theme-toggle" id="theme-toggle">
                 <i class="fas fa-moon"></i>
             </button>
@@ -818,9 +891,9 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
         
-        // Flowers system
+        // Flowers system - Flores más pequeñas
         const flowers = [];
-        const flowerCount = 25;
+        const flowerCount = 30; // Aumentar cantidad pero más pequeñas
         const colors = ['#8A2BE2', '#9370DB', '#DA70D6', '#b47cff', '#FF69B4', '#FF1493'];
         const flowerShapes = ['simple', 'daisy', 'tulip', 'rose'];
         
@@ -828,17 +901,18 @@
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                this.size = Math.random() * 15 + 10;
-                this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
+                this.size = Math.random() * 8 + 5; // Reducir tamaño significativamente
+                this.speedX = Math.random() * 0.5 - 0.25; // Reducir velocidad
+                this.speedY = Math.random() * 0.5 - 0.25;
                 this.color = colors[Math.floor(Math.random() * colors.length)];
                 this.petalCount = Math.floor(Math.random() * 6) + 5;
                 this.shape = flowerShapes[Math.floor(Math.random() * flowerShapes.length)];
                 this.rotation = Math.random() * Math.PI * 2;
-                this.rotationSpeed = Math.random() * 0.05 - 0.025;
-                this.wobble = Math.random() * 0.5;
-                this.wobbleSpeed = Math.random() * 0.05;
+                this.rotationSpeed = Math.random() * 0.03 - 0.015; // Rotación más lenta
+                this.wobble = Math.random() * 0.3; // Reducir balanceo
+                this.wobbleSpeed = Math.random() * 0.03;
                 this.wobbleOffset = Math.random() * Math.PI * 2;
+                this.opacity = Math.random() * 0.5 + 0.3; // Mayor transparencia
             }
             
             update() {
@@ -858,6 +932,7 @@
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
+                ctx.globalAlpha = this.opacity;
                 
                 const wobble = Math.sin(this.wobbleOffset) * this.wobble;
                 
@@ -950,7 +1025,7 @@
                 
                 // Draw stem
                 ctx.strokeStyle = '#00AA00';
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 1;
                 ctx.beginPath();
                 ctx.moveTo(0, this.size * 0.5);
                 ctx.lineTo(0, this.size * 2);
@@ -960,11 +1035,11 @@
             drawRose(wobble) {
                 // Draw rose with spiral petals
                 ctx.fillStyle = this.color;
-                const layers = 3;
+                const layers = 2; // Menos capas para flores más pequeñas
                 
                 for (let layer = 0; layer < layers; layer++) {
                     const layerSize = this.size * (0.7 + layer * 0.3) * (1 + wobble * 0.1);
-                    const petals = 5 + layer * 2;
+                    const petals = 4 + layer * 2; // Menos pétalos
                     
                     for (let i = 0; i < petals; i++) {
                         const angle = (i / petals) * Math.PI * 2 + layer * 0.5;
@@ -1020,6 +1095,23 @@
                 themeIcon.classList.remove('fa-sun');
                 themeIcon.classList.add('fa-moon');
             }
+        });
+        
+        // Menu toggle functionality
+        const menuToggle = document.getElementById('menu-toggle');
+        const mainNav = document.getElementById('main-nav');
+        
+        menuToggle.addEventListener('click', () => {
+            menuToggle.classList.toggle('active');
+            mainNav.classList.toggle('active');
+        });
+        
+        // Cerrar menú al hacer clic en un enlace
+        document.querySelectorAll('nav a').forEach(link => {
+            link.addEventListener('click', () => {
+                menuToggle.classList.remove('active');
+                mainNav.classList.remove('active');
+            });
         });
         
         // Smooth scrolling for navigation links
